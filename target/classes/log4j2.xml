@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration status="off" monitorInterval="1800">
+    <properties>
+        <property name="LOG_HOME">D:\logs</property>
+        <property name="LOG_GZ_HOME">${LOG_HOME}\gz</property>
+        <property name="INFO_LOG_FILE_NAME">info</property>
+        <property name="WARN_LOG_FILE_NAME">warn</property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p (%F:%L) - %m%n"/>
+        </Console>
+        <RollingRandomAccessFile name="InfoLogToFile"
+                                 fileName="${LOG_HOME}/${INFO_LOG_FILE_NAME}.log"
+                                 filePattern="${LOG_FILE_HOME}/${INFO_LOG_GZ_NAME}.%d{yyyy-MM-dd-HH-mm-ss}.log.gz">
+            <PatternLayout pattern="%d %-5p (%F:%L) - %m%n"/>
+            <ThresholdFilter level="info" onMatch="ACCEPT"
+                             onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="WarnLogToFile"
+                                 fileName="${LOG_HOME}/${WARN_LOG_FILE_NAME}.log"
+                                 filePattern="${LOG_FILE_HOME}/${WARN_LOG_FILE_NAME}.%d{yyyy-MM-dd-HH-mm-ss}.log.gz">
+            <PatternLayout pattern="%d %-5p (%F:%L) - %m%n"/>
+            <ThresholdFilter level="warn" onMatch="ACCEPT"
+                             onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+
+        <logger name="com.nfcat.nktool"
+                level="info"
+                additivity="false">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="InfoLogToFile"/>
+            <appender-ref ref="WarnLogToFile"/>
+        </logger>
+
+        <root level="info" includeLocation="true">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="InfoLogToFile"/>
+            <appender-ref ref="WarnLogToFile"/>
+        </root>
+    </Loggers>
+</Configuration>
