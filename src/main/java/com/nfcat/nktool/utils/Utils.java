@@ -30,7 +30,7 @@ public class Utils {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         try {
             GZIPInputStream ungzip = new GZIPInputStream(in);
-            byte[] buffer = new byte[5096];
+            byte[] buffer = new byte[4096];
             int n;
             while ((n = ungzip.read(buffer)) >= 0) {
                 out.write(buffer, 0, n);

@@ -92,7 +92,7 @@ public class DouYinWebSocket {
 
         });
 
-        driver.get("https://live.douyin.com/315333695998");
+        driver.get("https://live.douyin.com/120352258508");
 
         while (true) {
             try {
@@ -142,7 +142,7 @@ public class DouYinWebSocket {
                 case "WebcastLikeMessage" -> {
                     try {
                         DouYinWSS.LikeMessage message = DouYinWSS.LikeMessage.parseFrom(item.getPayload());
-                        log.info("[点赞消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")" + " 点赞数：" + message.getCount());
+//                        log.info("[点赞消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")" + " 点赞数：" + message.getCount());
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -150,7 +150,13 @@ public class DouYinWebSocket {
                 case "WebcastGiftMessage" -> {
                     try {
                         DouYinWSS.GiftMessage message = DouYinWSS.GiftMessage.parseFrom(item.getPayload());
-                        log.info("[礼物消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")" + "送出：" + message.getGift().getName());
+                        if (message.getGift().getId() == 0) return;
+                        log.info("[礼物消息] 用户：{}({}) 送出：{}(id:{})*{}",
+                                message.getUser().getNickname(),
+                                message.getUser().getId(),
+                                message.getGift().getName(),
+                                message.getGift().getId(),
+                                message.getComboCount());
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
