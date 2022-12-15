@@ -17,7 +17,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class KuaiShouWebSocket {
@@ -73,7 +72,6 @@ public class KuaiShouWebSocket {
         devTools.createSession();
         devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
 
-        AtomicInteger i = new AtomicInteger();
         devTools.addListener(Network.webSocketFrameReceived(), webSocketCreated -> {
             String payloadData = webSocketCreated.getResponse().getPayloadData();
             final byte[] data = Base64.getDecoder().decode(payloadData);
@@ -87,8 +85,7 @@ public class KuaiShouWebSocket {
                         if (uncompress != null) payload = uncompress;
                     }
                     case AES -> log.info("aes encrypt");
-                    case NONE, COMPRESSION_TYPE_UNKNOWN, UNRECOGNIZED ->
-                            payload = message.getPayload().toByteArray();
+                    case NONE, COMPRESSION_TYPE_UNKNOWN, UNRECOGNIZED -> payload = message.getPayload().toByteArray();
                 }
                 if (payload.length == 0) return;
                 switch (message.getPayloadType()) {
