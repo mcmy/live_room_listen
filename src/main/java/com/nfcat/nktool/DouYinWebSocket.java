@@ -1,19 +1,15 @@
 package com.nfcat.nktool;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.nfcat.nktool.proto.DouYinWSS;
+import com.nfcat.nktool.adapter.ChromeAdapter;
 import com.nfcat.nktool.proto.DouYinPackWSS;
+import com.nfcat.nktool.proto.DouYinWSS;
 import com.nfcat.nktool.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.v107.network.Network;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -22,55 +18,18 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DouYinWebSocket {
 
-    static {
-        //https://registry.npmmirror.com/binary.html?path=chromedriver/
-//        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\Google\\Chrome\\Application\\chromedriver.exe");
-    }
-
-    public static DouYinWebSocket app = new DouYinWebSocket();
-
     public static void main(String[] args) {
-//        while (true) {
-        if (app == null) app = new DouYinWebSocket();
-        try {
-            app.loop();
-        } catch (Exception e) {
-            app.destroy();
-            log.error("loop error:", e);
-        }
-//        }
+//        https://registry.npmmirror.com/binary.html?path=chromedriver/
+//        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\Google\\Chrome\\Application\\chromedriver.exe");
+        new DouYinWebSocket().start();
     }
 
-    ChromeDriver driver;
 
-    public void loop() {
-        ChromeOptions options = new ChromeOptions();
-        options.setHeadless(false);
+    public void start() {
+        ChromeAdapter chromeAdapter = new ChromeAdapter(ChromeAdapter.getSimpleOptions(true));
+        ChromeDriver driver = chromeAdapter.getDriver();
 
-        List<Object> list = new ArrayList<>();
-        list.add("enable-automation");
-        options.setExperimentalOption("excludeSwitches", list);
-
-        options.addArguments("--disable-blink-features");
-        options.addArguments("--disable-blink-features=AutomationControlled");
-//        options.addArguments("--start-maximized");
-
-//        options.addArguments("window-size=1920x1080");
-//        options.addArguments("kiosk");
-//        options.addArguments("disable-gpu");
-
-        //Chrome设置代理
-        // if (zsyzbConfig.proxyHost != null && !zsyzbConfig.proxyHost.equals("") && zsyzbConfig.proxyPort != null) {
-        //    options.addArguments("--proxy-server=http://" + proxyIP);
-        //}
-
-        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
-        driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        WebDriverWait waitS20 = new WebDriverWait(driver, Duration.ofSeconds(20));
-
-        DevTools devTools = driver.getDevTools();
-        devTools.createSession();
+        DevTools devTools = chromeAdapter.getInitDevTools();
         devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
 
         devTools.addListener(Network.webSocketFrameReceived(), received -> {
@@ -103,12 +62,6 @@ public class DouYinWebSocket {
             }
         }
     }
-
-    public void destroy() {
-        if (driver != null) driver.quit();
-        app = null;
-    }
-
 
     private void decodeMessage(List<DouYinWSS.Message> messagesList) {
         if (messagesList == null) return;
@@ -163,7 +116,7 @@ public class DouYinWebSocket {
                         e.printStackTrace();
                     }
                 }
-                case "WebcastRoomUserSeqMessage"->{
+                case "WebcastRoomUserSeqMessage" -> {
                     try {
                         DouYinWSS.RoomUserSeqMessage message = DouYinWSS.RoomUserSeqMessage.parseFrom(item.getPayload());
                         log.info("[人数更新] 总观看人数：" + message.getTotalUser() + " 正在观看人数：" + message.getTotal());
