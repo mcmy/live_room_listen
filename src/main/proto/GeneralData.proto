@@ -1,0 +1,30 @@
+syntax = "proto3";
+option java_outer_classname = "GeneralData";//生成的外部类名，同时也是文件名
+option java_package = "com.nfcat.nktool.proto";//生成的外部类名，同时也是文件名
+
+//准备整个2个数据
+
+message GeneralData{
+  MessageFrom messageFrom = 1;
+  DataType dataType = 2;
+}
+
+enum DataType{
+  S_MESSAGE_FROM = 0;
+
+  I_CHAT_MESSAGE = 1;
+  I_BARRAGE_MESSAGE = 2;
+  I_GIFT_MESSAGE = 3;
+
+  I_ENTER_ROOM = 4;
+}
+
+enum MessageFrom{
+  DOU_YIN = 0;
+  KUAI_SHOU = 1;
+}
+
+message ChatMessage{
+  string name = 1;
+  string text = 2;
+}
