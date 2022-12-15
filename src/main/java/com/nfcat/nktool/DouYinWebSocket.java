@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class DouYinWebSocket {
 
     static {
+        //https://registry.npmmirror.com/binary.html?path=chromedriver/
 //        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\Google\\Chrome\\Application\\chromedriver.exe");
     }
 
@@ -156,7 +157,8 @@ public class DouYinWebSocket {
                                 message.getUser().getId(),
                                 message.getGift().getName(),
                                 message.getGift().getId(),
-                                message.getComboCount());
+                                //礼物数量修正，不确定
+                                message.getComboCount() - message.getRepeatCount());
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }

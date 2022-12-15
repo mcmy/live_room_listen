@@ -1,10 +1,6 @@
 package com.nfcat.nktool;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.nfcat.nktool.proto.DouYinPackWSS;
-import com.nfcat.nktool.proto.DouYinWSS;
 import com.nfcat.nktool.proto.KSPackWSS;
 import com.nfcat.nktool.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +11,11 @@ import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.v107.network.Network;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,7 +68,7 @@ public class KuaiShouWebSocket {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         WebDriverWait waitS20 = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        driver.get("https://live.kuaishou.com/u/LOLMubai666");
+        driver.get("https://live.kuaishou.com/u/limimi666");
         DevTools devTools = driver.getDevTools();
         devTools.createSession();
         devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
@@ -81,23 +79,19 @@ public class KuaiShouWebSocket {
             final byte[] data = Base64.getDecoder().decode(payloadData);
             try {
                 KSPackWSS.SocketMessage message = KSPackWSS.SocketMessage.parseFrom(data);
-                log.info("message type: " + message.getPayloadType());
-                System.out.println(JSONObject.toJSONString(message));
+                log.info("message type: {},compression type：{}", message.getPayloadType(), message.getCompressionType());
                 byte[] payload = new byte[0];
-                switch (message.getCompressionType()){
-                    case GZIP->{
+                switch (message.getCompressionType()) {
+                    case GZIP -> {
                         byte[] uncompress = Utils.uncompress(message.getPayload());
                         if (uncompress != null) payload = uncompress;
                     }
-                    case NONE,UNKNOWN -> {
-                        payload = message.getPayload().toStringUtf8().getBytes(StandardCharsets.UTF_8);
-                    }
-                    case AES -> {
-                        log.info("aes encrypt");
-                    }
+                    case AES -> log.info("aes encrypt");
+                    case NONE, COMPRESSION_TYPE_UNKNOWN, UNRECOGNIZED ->
+                            payload = message.getPayload().toByteArray();
                 }
                 if (payload.length == 0) return;
-                switch (message.getPayloadType()){
+                switch (message.getPayloadType()) {
                     case CS_ENTER_ROOM -> {
                         KSPackWSS.CSWebEnterRoom csWebEnterRoom = KSPackWSS.CSWebEnterRoom.parseFrom(payload);
                         System.out.println(JSONObject.toJSONString(csWebEnterRoom));
@@ -107,11 +101,10 @@ public class KuaiShouWebSocket {
                         System.out.println(JSONObject.toJSONString(scWebFeedPush));
                     }
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
+                System.out.println(payloadData);
             }
-
         });
 
         while (true) {
