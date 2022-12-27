@@ -1,5 +1,6 @@
 package com.nfcat.nktool;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.nfcat.nktool.adapter.ChromeAdapter;
 import com.nfcat.nktool.proto.DouYinPackWSS;
@@ -10,9 +11,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.v107.network.Network;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j

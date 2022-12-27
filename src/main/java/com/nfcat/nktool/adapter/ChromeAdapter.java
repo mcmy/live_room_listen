@@ -20,7 +20,7 @@ public class ChromeAdapter {
         return new WebDriverWait(driver, Duration.ofSeconds(seconds));
     }
 
-    public DevTools getInitDevTools(){
+    public DevTools getInitDevTools() {
         DevTools devTools = driver.getDevTools();
         devTools.createSession();
         return devTools;
