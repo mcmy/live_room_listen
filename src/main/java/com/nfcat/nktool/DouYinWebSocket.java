@@ -11,8 +11,10 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.v107.network.Network;
 
-import java.io.Serializable;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -24,8 +26,11 @@ public class DouYinWebSocket {
         new DouYinWebSocket().start();
     }
 
+    MsgWebSocketServer webSocketServer;
 
     public void start() {
+        webSocketServer = new MsgWebSocketServer(8989);
+        webSocketServer.start();
         ChromeAdapter chromeAdapter = new ChromeAdapter(ChromeAdapter.getSimpleOptions(true));
         ChromeDriver driver = chromeAdapter.getDriver();
 
@@ -52,7 +57,7 @@ public class DouYinWebSocket {
 
         });
 
-        driver.get("https://live.douyin.com/120352258508");
+        driver.get("https://live.douyin.com/59176345458");
 
         while (true) {
             try {
@@ -71,6 +76,12 @@ public class DouYinWebSocket {
                     try {
                         DouYinWSS.MemberMessage message = DouYinWSS.MemberMessage.parseFrom(item.getPayload());
                         log.info("[有人加入] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")");
+                        Map<String, Object> map = Map.of(
+                                "type", "join",
+                                "uid", message.getUser().getId(),
+                                "nickname", message.getUser().getNickname()
+                        );
+                        //webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -80,6 +91,12 @@ public class DouYinWebSocket {
                     try {
                         DouYinWSS.SocialMessage message = DouYinWSS.SocialMessage.parseFrom(item.getPayload());
                         log.info("[关注消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")");
+                        Map<String, Object> map = Map.of(
+                                "type", "concern",
+                                "uid", message.getUser().getId(),
+                                "nickname", message.getUser().getNickname()
+                        );
+                        //webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -89,6 +106,13 @@ public class DouYinWebSocket {
                     try {
                         DouYinWSS.ChatMessage message = DouYinWSS.ChatMessage.parseFrom(item.getPayload());
                         log.info("[评论消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")" + "说：" + message.getContent());
+                        Map<String, Object> map = Map.of(
+                                "type", "comments",
+                                "uid", message.getUser().getId(),
+                                "nickname", message.getUser().getNickname(),
+                                "msg", message.getContent()
+                        );
+                        //webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -97,6 +121,13 @@ public class DouYinWebSocket {
                     try {
                         DouYinWSS.LikeMessage message = DouYinWSS.LikeMessage.parseFrom(item.getPayload());
 //                        log.info("[点赞消息] " + message.getUser().getNickname() + "(" + message.getUser().getId() + ")" + " 点赞数：" + message.getCount());
+                        Map<String, Object> map = Map.of(
+                                "type", "like",
+                                "uid", message.getUser().getId(),
+                                "nickname", message.getUser().getNickname(),
+                                "num", message.getTotal()
+                        );
+                        //webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -112,6 +143,17 @@ public class DouYinWebSocket {
                                 message.getGift().getId(),
                                 //礼物数量修正，不确定
                                 message.getComboCount() - message.getRepeatCount());
+                        Map<String, Object> map = Map.of(
+                                "type", "gift",
+                                "uid", message.getUser().getId(),
+                                "nickname", message.getUser().getNickname(),
+                                "comboCount", message.getComboCount(),
+                                "repeatCount",message.getRepeatCount(),
+                                "diamondCount",message.getGift().getDiamondCount(),
+                                "gid", message.getGift().getId(),
+                                "gName", message.getGift().getName()
+                        );
+                        webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
@@ -120,6 +162,12 @@ public class DouYinWebSocket {
                     try {
                         DouYinWSS.RoomUserSeqMessage message = DouYinWSS.RoomUserSeqMessage.parseFrom(item.getPayload());
                         log.info("[人数更新] 总观看人数：" + message.getTotalUser() + " 正在观看人数：" + message.getTotal());
+                        Map<String, Object> map = Map.of(
+                                "type", "userNum",
+                                "totalUser", message.getTotalUser(),
+                                "total", message.getTotal()
+                        );
+                        //webSocketServer.sendAll(JSONObject.toJSONString(map));
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();
                     }
